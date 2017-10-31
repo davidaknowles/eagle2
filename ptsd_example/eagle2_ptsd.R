@@ -81,6 +81,11 @@ results = foreach(gene=test_genes, .combine = bind_rows) %dopar% {
 
 write.table(results, "ptsd_results.txt", quote=F, sep="\t", row.names=F)
 
+results=read.table("ptsd_results.txt.gz", header=T, stringsAsFactors = F)
+
+p=results$lrtp
+qplot(-log10(seq(from=1/length(p),to=1,by=1/length(p))), -log10(sort(p))) + geom_abline(intercept=0,slope=1) + xlab("Expected -log10(p)") + ylab("Observed -log10(p)")
+
 # require(ggplot2)
 
 # Do the LRT and Wald p-values agree

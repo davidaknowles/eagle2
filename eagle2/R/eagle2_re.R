@@ -3,15 +3,22 @@
 logit=function(g) log(g/(1.0-g))
 inv_logit=function(g) { 1.0/(1.0+exp(-g)) }
 
-#' Beta binomial GLMM with flips. Prior on concentration parameter is Gamma(concShape,concRate)
+#' Beta binomial GLMM with flips. 
 #'
 #' Includes a per individual, per SNP random effect (shared across conditions) and uses stochastic 
 #' variational inference to integrate over these.
+#' Prior on concentration parameter is Gamma(concShape,concRate)
 #' 
 #' @param ys numerator counts [n x T x K] where n are individuals, T are timepoints, K are SNPs
 #' @param ns denominator counts [n x T x K]
 #' @param concShape Shape of prior on concentration
 #' @param concRate Rate of prior on concentration
+#' @param USE_LBFGS Whether to optimize using LBFGS rather than SVEM (may be more stable)
+#' @param burnin Its to discard
+#' @param iterations Its to fit
+#' @param elbo_samples MC samples to approximate ELBO
+#' @param learning_rate For SVEM
+#' @param seed Initial random seed
 #' @return List with likelihood ratio, p-value and fits
 #' @importFrom rstan optimizing sampling grad_log_prob log_prob
 #' @importFrom foreach foreach %do%

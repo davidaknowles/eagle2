@@ -2,8 +2,9 @@
 data {
   int<lower=0> N; 
   int<lower=0> T; 
-  int<lower=0> ys[N,T];
-  int<lower=0> ns[N,T];
+  int<lower=0> R; 
+  int<lower=0> ys[N,T,R];
+  int<lower=0> ns[N,T,R];
   real<lower=0> concShape; 
   real<lower=0> concRate;  
   real<lower=0> errorRate; 
@@ -16,12 +17,14 @@ transformed parameters {
   for (n in 1:N) {
     probs[n] = rep_vector(0, 3);
     for (t in 1:T) {
+      for (r in 1:R) {
         // likelihood of being het
-        probs[n][1] = probs[n][1] + beta_binomial_lpmf(ys[n,t] | ns[n,t], conc * .5, conc * .5);
+        probs[n][1] = probs[n][1] + beta_binomial_lpmf(ys[n,t,r] | ns[n,t,r], conc * .5, conc * .5);
         // likelihood of being homozygous ref
-        probs[n][2] = probs[n][2] + binomial_lpmf(ys[n,t] | ns[n,t], errorRate);
+        probs[n][2] = probs[n][2] + binomial_lpmf(ys[n,t,r] | ns[n,t,r], errorRate);
         // likelihood of being homozygous alt
-        probs[n][3] = probs[n][3] + binomial_lpmf(ys[n,t] | ns[n,t], 1.0-errorRate);
+        probs[n][3] = probs[n][3] + binomial_lpmf(ys[n,t,r] | ns[n,t,r], 1.0-errorRate);
+      }
     }
   }
 }

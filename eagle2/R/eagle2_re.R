@@ -40,9 +40,18 @@ eagle2_re=function(ys,ns,concShape=1.0001,concRate=1e-4,USE_LBFGS=T,burnin=3000,
   
   dat=list(N=N,P=1L,T=Ti,K=K,ys=ys,ns=ns,x=xNull,concShape=concShape,concRate=concRate)
   
+  the_model = stanmodels$bb_with_re
+  init_model = stanmodels$bb
+  
+  if (length(dim(ys))==4) {
+    dat$R=dim(ys)[4]
+    the_model = stanmodels$bb_w_replicates_and_re
+    init_model = stanmodels$bb_w_replicates
+  }
+  
   # get stan_fit object so we can call sampler$grad_log_prob for the gradient
   # no sampling is done, just a hack to get a stanfit object
-  sampler=sampling(stanmodels$bb_with_re, dat, iter=1, chains=0)
+  sampler=sampling(the_model, dat, iter=1, chains=0)
   
   # specific which parameters to optimize (rather than integrate over)
   make_skeleton=function(samp) {
@@ -60,7 +69,7 @@ eagle2_re=function(ys,ns,concShape=1.0001,concRate=1e-4,USE_LBFGS=T,burnin=3000,
   to_optim=as.logical(unlist(sk))
   
   # initialize using the model fit without the random effects
-  o=optimizing(stanmodels$bb, dat, as_vector=F, seed=seed)
+  o=optimizing(init_model, dat, as_vector=F, seed=seed)
   init=list(m=get_skeleton(sampler), s=get_skeleton(sampler))
   init$m$beta=o$par$beta
   #init$m$p=logit(o$par$p)
@@ -99,7 +108,7 @@ eagle2_re=function(ys,ns,concShape=1.0001,concRate=1e-4,USE_LBFGS=T,burnin=3000,
   dat_full$P=Ti
   
   # specify which parameters to optimize
-  sampler_full=sampling(stanmodels$bb_with_re, dat_full, iter=1, chains=0)
+  sampler_full=sampling(the_model, dat_full, iter=1, chains=0)
   
   sk_full = make_skeleton(sampler_full)
   to_optim_full=as.logical(unlist(sk_full))

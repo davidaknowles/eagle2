@@ -69,6 +69,51 @@ detect_homozygotes=function(a,nh,concShape=1.0001,concRate=1e-4,errorRate=0.01,p
   list(a=a,nh=nh,snp_to_keep=snp_to_keep)
 }
 
+#' Detect potential homozygote (or imprinted) SNP-individual pairs and zero them out. 
+#' 
+#' @param a Numerator counts [n x T x K] where n are individuals, T are timepoints, K are SNPs
+#' @param nh denominator counts [n x T x K]
+#' @param concShape Shape of prior on concentration
+#' @param concRate Rate of prior on concentration
+#' @param errorRate Assumed probability of erroneously observing a read with the alternative allele, due to sequencing or alignment error
+#' @param posterior_threshold If posterior probability of being a het is below this the individual/SNP pair will be ignored. 
+#' @return Filtered a and nh matrices, and which SNPs were kept. 
+#' @import foreach
+#' @importFrom rstan optimizing
+#' @export
+detect_homozygotes_w_replicates=function(a,nh,concShape=1.0001,concRate=1e-4,errorRate=0.01,posterior_theshold=0.95,verbose=T)
+{
+  
+  homo=foreach(snp_index=seq_len(dim(nh)[3]), .combine=cbind) %do% {
+    as=a[,,snp_index,]
+    nhh=nh[,,snp_index,]
+    ind_to_keep=apply(nhh,1,sum)>0
+    treat_to_keep=apply(nhh,2,sum)>0
+    
+    as=as[ind_to_keep,treat_to_keep,,drop=F]
+    nhh=nhh[ind_to_keep,treat_to_keep,,drop=F]
+    
+    o=optimizing(stanmodels$is_het_w_replicates, dat=list(N=dim(nhh)[1], T=dim(nhh)[2], R=dim(nhh)[3], errorRate=errorRate, concShape=concShape, concRate=concRate, ys=as, ns=nhh), as_vector=F)
+    eo=exp(o$par$probs)
+    pr=sweep(eo, 1, rowSums(eo), "/")
+    
+    homo=pr[,1]<posterior_theshold
+    
+    if (verbose) cat("Removing",sum(homo),"individual(s) from SNP",dimnames(a)[[3]][snp_index],"\n")
+    
+    nh[which(ind_to_keep)[homo],treat_to_keep,snp_index,]=0
+    a[which(ind_to_keep)[homo],treat_to_keep,snp_index,]=0
+  }
+  
+  snp_to_keep=apply(nh>0, 3, any)
+  ind_to_keep=apply(nh,1,sum) > 0
+  if (sum(snp_to_keep)==0 | sum(ind_to_keep)==0) return(NULL)
+  a=a[ind_to_keep,,snp_to_keep,,drop=F]
+  nh=nh[ind_to_keep,,snp_to_keep,,drop=F]
+  
+  list(a=a,nh=nh,snp_to_keep=snp_to_keep)
+}
+
 #' Beta binomial GLM with flips. Prior on concentration parameter is Gamma(concShape,concRate)
 #'
 #' @param ys numerator counts [n x T x K] where n are individuals, T are timepoints, K are SNPs

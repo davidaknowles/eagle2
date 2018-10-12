@@ -5,7 +5,7 @@ This version is designed for experiments with repeated measurements on the same 
 Install using
 
 ```
-devtools::install_github("davidaknowles/eagle2/eagle2", args="--preclean")
+devtools::install_github("davidaknowles/eagle2/eagle2")
 ```
 
 /ptsd_example/eagle2_ptsd.R shows a complete example of data processing, running EAGLE2 per gene, and plotting the most significant associations. 

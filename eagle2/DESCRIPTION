@@ -1,22 +1,27 @@
 Package: eagle2
-Type: Package
 Title: EAGLE2: Environment-ASE through Generalized LinEar modeling, v2. 
-Version: 1.0
-Date: 2017-03-15
+Version: 1.1
 Author: David A. Knowles
-Maintainer: David A. Knowles <knowles84@gmail.com>
+Maintainer: David A. Knowles <david.arthur.knowles@gmail.com>
 Description: EAGLE2: Environment-ASE through Generalized LinEar modeling, v2. This version is designed for experiments with repeated measurements on the same sample, e.g. in different conditions. 
-License: GPLv3
-Depends:
-    R (>= 3.0.2),
-    Rcpp (>= 0.12.9),
-    methods (>= 3.2.2)
-Imports:
-    rstan (>= 2.14.1),
-    rstantools (>= 1.1.0),
+License: GPL (>=3)
+Depends: 
+    methods,
+    R (>= 3.4.0),
+    Rcpp (>= 0.12.19)
+Imports: 
+    rstan (>= 2.17.4),
+    rstantools (>= 1.5.1)
+LinkingTo: 
+    BH (>= 1.66.0-1),
+    Rcpp (>= 0.12.19),
+    RcppEigen (>= 0.3.3.4.0),
+    rstan (>= 2.17.4),
+    StanHeaders (>= 2.18.0),
     foreach (>= 1.4.3),
-    abind (>= 1.4),
-    roxygen2 (>= 6.0.1)
-LinkingTo: StanHeaders (>= 2.14.0.1), rstan (>= 2.14.1), BH (>= 1.62.0.1), Rcpp
-    (>= 0.12.9), RcppEigen (>= 0.3.2.9.0)
+    abind (>= 1.4)
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+SystemRequirements: GNU make
 RoxygenNote: 6.1.0

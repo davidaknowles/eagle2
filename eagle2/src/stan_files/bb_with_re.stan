@@ -4,10 +4,10 @@
 // Random effect terms r per SNP.
 functions {
   // would be more efficient to pre-calc p
-  real beta_binomial_reparam_log(int y, int n, real g, real conc) {
+  real beta_binomial_reparam_lpmf(int y, int n, real g, real conc) {
     real p; 
     p = inv_logit(g);
-    return beta_binomial_log(y, n, conc*p, conc*(1.0-p));
+    return beta_binomial_lpmf(y | n, conc*p, conc*(1.0-p));
   }
 }
 data {
@@ -43,8 +43,8 @@ model {
       for (t in 1:T) {
         real g; 
         g = xb[t][n] + re[n,k];
-        log_prob_unflipped[t] = beta_binomial_reparam_log(ys[n,t,k], ns[n,t,k], g, conc[k]); 
-        log_prob_flipped[t] = beta_binomial_reparam_log(ys[n,t,k], ns[n,t,k], -g, conc[k]);
+        log_prob_unflipped[t] = beta_binomial_reparam_lpmf(ys[n,t,k] | ns[n,t,k], g, conc[k]); 
+        log_prob_flipped[t] = beta_binomial_reparam_lpmf(ys[n,t,k] | ns[n,t,k], -g, conc[k]);
       }
       target += log_sum_exp( log(p[k]) + sum(log_prob_unflipped), log(1.0-p[k]) + sum(log_prob_flipped) ) ;
     }
